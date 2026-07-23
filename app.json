@@ -4,16 +4,19 @@
     "slug": "moodmap-ai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/newly.png",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/newly.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#4A90D9"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.placeholder.app",
+      "bundleIdentifier": "com.moodmap.app",
+      "buildNumber": "1",
+      "icon": "./assets/images/icon.png",
+      "appleTeamId": "REPLACE_WITH_YOUR_TEAM_ID",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Allow Emotional GPS to access your location to track where you feel your best.",
@@ -23,7 +26,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/newly.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#4A90D9"
       },
       "package": "com.moodmap.app",
@@ -40,7 +43,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/images/newly.png",
+      "favicon": "./assets/images/icon.png",
       "bundler": "metro"
     },
     "plugins": [
@@ -60,7 +63,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/newly.png",
+          "icon": "./assets/images/icon.png",
           "color": "#4A90D9"
         }
       ]
