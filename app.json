@@ -15,7 +15,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.placeholder.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Allow Emotional GPS to access your location to track where you feel your best."
       }
     },
     "android": {
@@ -23,7 +24,11 @@
         "foregroundImage": "./assets/images/newly.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.placeholder.app"
+      "package": "com.placeholder.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/images/newly.png",
