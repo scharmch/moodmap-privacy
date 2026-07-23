@@ -366,6 +366,12 @@ export async function setCachedInsights(type: string, content: unknown): Promise
   );
 }
 
+export async function deleteAllCheckIns(): Promise<void> {
+  console.log('[DB] Deleting all check-ins');
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM check_ins');
+}
+
 export async function clearInsightsCache(): Promise<void> {
   const database = await getDatabase();
   await database.runAsync('DELETE FROM insights_cache');

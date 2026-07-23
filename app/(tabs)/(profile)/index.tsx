@@ -9,9 +9,8 @@ import {
   Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import {
-  User,
   Bell,
   Shield,
   Database,
@@ -21,6 +20,7 @@ import {
   Check,
   Trash2,
   Download,
+  FileText,
 } from 'lucide-react-native';
 import { COLORS } from '@/constants/Colors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -122,6 +122,7 @@ function Divider() {
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [displayName, setDisplayName] = useState('');
   const [editingName, setEditingName] = useState(false);
@@ -200,11 +201,6 @@ export default function ProfileScreen() {
         },
       ]
     );
-  };
-
-  const handleExportData = () => {
-    console.log('[Profile] Export data pressed');
-    Alert.alert('Export data', 'Data export feature coming soon. Your data is stored locally on this device.');
   };
 
   const streak = calculateStreak(checkIns);
@@ -399,6 +395,16 @@ export default function ProfileScreen() {
               }
             />
             <Divider />
+            <SettingRow
+              icon={<FileText size={18} color={COLORS.primary} />}
+              label="Privacy Policy"
+              onPress={() => {
+                console.log('[Profile] Privacy Policy pressed');
+                router.push('/privacy-policy');
+              }}
+              showChevron
+            />
+            <Divider />
             <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
               <Text style={{ fontSize: 12, color: COLORS.textTertiary, fontFamily: 'Nunito_400Regular', lineHeight: 18 }}>
                 🔒 Your data never leaves your device. All check-ins are stored locally using SQLite.
@@ -410,8 +416,11 @@ export default function ProfileScreen() {
           <SectionCard title="Data">
             <SettingRow
               icon={<Download size={18} color={COLORS.primary} />}
-              label="Export my data"
-              onPress={handleExportData}
+              label="Your Data & Export"
+              onPress={() => {
+                console.log('[Profile] Your Data & Export pressed');
+                router.push('/data-export');
+              }}
               showChevron
             />
             <Divider />
