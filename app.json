@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "MoodMap AI",
+    "slug": "moodmap-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/newly.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/newly.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.placeholder.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/newly.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.placeholder.app"
+    },
+    "web": {
+      "favicon": "./assets/images/newly.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-router",
+      "expo-web-browser",
+      "expo-secure-store",
+      "expo-audio",
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Emotional GPS to access your location to track where you feel your best.",
+          "locationWhenInUsePermission": "Allow Emotional GPS to access your location to track where you feel your best."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/newly.png",
+          "color": "#4A90D9"
+        }
+      ]
+    ],
+    "scheme": "moodmapai",
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {}
+    }
+  }
+}
