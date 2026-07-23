@@ -1,5 +1,6 @@
 {
   "expo": {
+    "privacyPolicyUrl": "https://moodmap.app/privacy",
     "name": "MoodMap AI",
     "slug": "moodmap-ai",
     "version": "1.0.0",
@@ -73,7 +74,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "privacyPolicyUrl": "https://moodmap.app/privacy"
     }
   }
 }
