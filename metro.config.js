@@ -7,15 +7,18 @@ const config = getDefaultConfig(__dirname);
 
 config.resolver.unstable_enablePackageExports = true;
 
-// Stub out react-native-maps on web — the .web.tsx platform shim handles map rendering
-const _originalResolveRequest = config.resolver.resolveRequest;
+// On web, replace react-native-maps (native-only) with a no-op stub so that
+// Metro doesn't pull in native-only modules like codegenNativeCommands.
+// The actual map screen already has an index.web.tsx that never imports this
+// package, but Metro still traverses index.tsx during dependency resolution.
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (platform === 'web' && moduleName === 'react-native-maps') {
-    return { type: 'empty' };
+    return {
+      filePath: path.resolve(__dirname, 'utils/react-native-maps-stub.js'),
+      type: 'sourceFile',
+    };
   }
-  if (_originalResolveRequest) {
-    return _originalResolveRequest(context, moduleName, platform);
-  }
+  // Fall through to default resolver for everything else
   return context.resolveRequest(context, moduleName, platform);
 };
 
