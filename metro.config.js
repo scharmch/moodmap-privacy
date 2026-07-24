@@ -7,21 +7,6 @@ const config = getDefaultConfig(__dirname);
 
 config.resolver.unstable_enablePackageExports = true;
 
-// On web, replace react-native-maps (native-only) with a no-op stub so that
-// Metro doesn't pull in native-only modules like codegenNativeCommands.
-// The actual map screen already has an index.web.tsx that never imports this
-// package, but Metro still traverses index.tsx during dependency resolution.
-config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (platform === 'web' && moduleName === 'react-native-maps') {
-    return {
-      filePath: path.resolve(__dirname, 'utils/react-native-maps-stub.js'),
-      type: 'sourceFile',
-    };
-  }
-  // Fall through to default resolver for everything else
-  return context.resolveRequest(context, moduleName, platform);
-};
-
 // Use turborepo to restore the cache when possible
 config.cacheStores = [
     new FileStore({ root: path.join(__dirname, 'node_modules', '.cache', 'metro') }),
@@ -286,6 +271,15 @@ config.server.enhanceMiddleware = (middleware) => {
     // Pass through to default Metro middleware
     return middleware(req, res, next);
   };
+};
+
+// Alias react-native-maps to a no-op stub on web to prevent native-only module errors
+const MAPS_STUB = path.resolve(__dirname, 'utils/react-native-maps-stub.js');
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (platform === 'web' && moduleName === 'react-native-maps') {
+    return { filePath: MAPS_STUB, type: 'sourceFile' };
+  }
+  return context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;
