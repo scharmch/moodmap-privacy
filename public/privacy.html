@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — MoodMap AI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.7;
+      font-size: 16px;
+      padding: 40px 20px 80px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid #e8f0fb;
+    }
+
+    .app-name {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #4A90D9;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .effective-date {
+      font-size: 14px;
+      color: #666;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #4A90D9;
+      margin-top: 40px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin-bottom: 14px;
+      color: #333;
+    }
+
+    ul {
+      margin: 0 0 14px 0;
+      padding-left: 22px;
+    }
+
+    ul li {
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    a {
+      color: #4A90D9;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .highlight-box {
+      background: #f0f7ff;
+      border-left: 4px solid #4A90D9;
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid #e8e8e8;
+      font-size: 14px;
+      color: #888;
+      text-align: center;
+    }
+
+    footer a {
+      color: #4A90D9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="app-name">MoodMap AI</div>
+      <h1>Privacy Policy</h1>
+      <p class="effective-date">Effective date: July 1, 2025</p>
+    </header>
+
+    <p>
+      Your privacy is fundamental to MoodMap AI. This policy explains what data we collect,
+      how it is stored, and your rights as a user. We have designed MoodMap AI with a
+      privacy-first architecture: your personal data stays on your device.
+    </p>
+
+    <div class="highlight-box">
+      <p>MoodMap AI stores all your mood data locally on your device. We do not upload, sell, or share your personal check-in data with any third party.</p>
+    </div>
+
+    <h2>1. What Data We Collect</h2>
+    <p>When you use MoodMap AI, the following information may be recorded and stored locally on your device:</p>
+    <ul>
+      <li><strong>Mood scores</strong> — numerical ratings (1–10) you enter during check-ins</li>
+      <li><strong>Activities and context</strong> — tags you select (e.g. work, exercise, social) and free-text notes</li>
+      <li><strong>Location data</strong> — optional GPS coordinates associated with a check-in (see Section 3)</li>
+      <li><strong>Voice notes</strong> — optional audio recordings you make during a check-in (see Section 4)</li>
+      <li><strong>Physical sensations</strong> — body-awareness tags you choose to log</li>
+      <li><strong>Device information</strong> — basic device identifiers used solely for subscription management via RevenueCat (see Section 5)</li>
+    </ul>
+    <p>We do not collect your name, email address, or any account credentials unless you explicitly create an account.</p>
+
+    <h2>2. How Data Is Stored</h2>
+    <p>
+      All mood check-in data — including scores, activities, notes, voice recordings, and location
+      coordinates — is stored exclusively in a local SQLite database on your device using
+      <strong>expo-sqlite</strong>. This data never leaves your device and is never transmitted
+      to our servers or any external service.
+    </p>
+    <p>
+      Backups of this data may occur through your device's standard OS backup mechanisms
+      (iCloud on iOS, Google Drive on Android) if you have those services enabled. These
+      backups are governed by Apple's and Google's respective privacy policies.
+    </p>
+    <p>
+      We do not operate any servers that receive, process, or store your personal mood data.
+    </p>
+
+    <h2>3. Location Data</h2>
+    <p>
+      Location access is entirely optional. MoodMap AI will only request location permission
+      if you choose to enable the "Emotional GPS" feature. You can use the app fully without
+      ever granting location access.
+    </p>
+    <p>When location is enabled:</p>
+    <ul>
+      <li>Coordinates are stored locally on your device alongside the relevant check-in</li>
+      <li>You can enable <strong>privacy blur</strong>, which reduces coordinate precision so your exact address is never recorded</li>
+      <li>Location data is never transmitted to our servers or shared with third parties</li>
+      <li>You can delete all location data at any time via the Data Export &amp; Delete screen</li>
+    </ul>
+
+    <h2>4. Voice Notes</h2>
+    <p>
+      Voice notes are an optional feature. If you choose to record a voice note during a
+      check-in, the audio file is stored locally on your device only. Voice recordings are
+      never transmitted to any server, never processed by a remote speech-recognition service,
+      and never shared with third parties.
+    </p>
+    <p>
+      On-device transcription (if available) uses Apple's or Google's built-in speech
+      frameworks, which are governed by their respective privacy policies.
+    </p>
+
+    <h2>5. Third-Party Services</h2>
+    <p>MoodMap AI uses a limited number of third-party services:</p>
+    <ul>
+      <li>
+        <strong>RevenueCat</strong> — used to manage in-app subscriptions and purchases.
+        RevenueCat may collect a device identifier and purchase history to validate your
+        subscription status. This data is used solely for subscription management and is
+        governed by <a href="https://www.revenuecat.com/privacy" target="_blank" rel="noopener">RevenueCat's Privacy Policy</a>.
+        We do not sell this data.
+      </li>
+      <li>
+        <strong>Apple App Store / Google Play</strong> — payment processing for subscriptions
+        is handled entirely by Apple or Google. We do not receive or store your payment
+        card details.
+      </li>
+    </ul>
+    <p>We do not use advertising SDKs, analytics trackers, or social media SDKs.</p>
+
+    <h2>6. Your Rights</h2>
+    <p>You have full control over your data at all times:</p>
+    <ul>
+      <li><strong>Access</strong> — all your data is viewable within the app</li>
+      <li><strong>Export</strong> — use the "Export Data" feature to download a copy of all your check-ins in a portable format</li>
+      <li><strong>Delete</strong> — use the "Delete All Data" option in Settings to permanently erase all locally stored data from your device</li>
+    </ul>
+    <p>
+      Because your data is stored only on your device, exercising these rights does not
+      require contacting us — you can do it directly within the app at any time.
+    </p>
+
+    <h2>7. GDPR Compliance</h2>
+    <p>
+      If you are located in the European Economic Area (EEA), you have rights under the
+      General Data Protection Regulation (GDPR), including the right to access, rectify,
+      erase, restrict processing of, and port your personal data.
+    </p>
+    <p>
+      Because MoodMap AI processes all personal data locally on your device and does not
+      transmit it to our servers, we act as a data processor only for the limited device
+      identifier data handled by RevenueCat for subscription purposes. For any GDPR-related
+      requests, please contact us at <a href="mailto:scharmch@gmail.com">scharmch@gmail.com</a>.
+    </p>
+
+    <h2>8. CCPA Compliance</h2>
+    <p>
+      If you are a California resident, you have rights under the California Consumer
+      Privacy Act (CCPA), including the right to know what personal information is collected,
+      the right to delete personal information, and the right to opt out of the sale of
+      personal information.
+    </p>
+    <p>
+      <strong>We do not sell your personal information.</strong> All mood and check-in data
+      remains on your device. For any CCPA-related requests, contact us at
+      <a href="mailto:scharmch@gmail.com">scharmch@gmail.com</a>.
+    </p>
+
+    <h2>9. Children's Privacy</h2>
+    <p>
+      MoodMap AI is not directed at children under the age of 13. We do not knowingly
+      collect personal information from children under 13. If you believe a child under 13
+      has provided personal information through the app, please contact us at
+      <a href="mailto:scharmch@gmail.com">scharmch@gmail.com</a> and we will take
+      appropriate steps to address it.
+    </p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>
+      We may update this Privacy Policy from time to time. When we do, we will revise the
+      "Effective date" at the top of this page. We encourage you to review this policy
+      periodically. Continued use of MoodMap AI after changes are posted constitutes your
+      acceptance of the updated policy.
+    </p>
+
+    <h2>11. Contact Us</h2>
+    <p>
+      If you have any questions, concerns, or requests regarding this Privacy Policy or
+      your data, please contact us:
+    </p>
+    <p>
+      <strong>Email:</strong> <a href="mailto:scharmch@gmail.com">scharmch@gmail.com</a>
+    </p>
+    <p>We aim to respond to all privacy-related inquiries within 48 hours.</p>
+
+    <footer>
+      <p>&copy; 2025 MoodMap AI. All rights reserved.</p>
+      <p style="margin-top: 8px;"><a href="support.html">Support</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy Policy</a></p>
+    </footer>
+  </div>
+</body>
+</html>
