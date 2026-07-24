@@ -273,11 +273,10 @@ config.server.enhanceMiddleware = (middleware) => {
   };
 };
 
-// Alias react-native-maps to a no-op stub on web to prevent native-only module errors
 const MAPS_STUB = path.resolve(__dirname, 'utils/react-native-maps-stub.js');
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (platform === 'web' && moduleName === 'react-native-maps') {
-    return { filePath: MAPS_STUB, type: 'sourceFile' };
+  if (platform === 'web' && moduleName.startsWith('react-native-maps')) {
+    return { type: 'sourceFile', filePath: MAPS_STUB };
   }
   return context.resolveRequest(context, moduleName, platform);
 };
