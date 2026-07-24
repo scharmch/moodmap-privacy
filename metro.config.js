@@ -273,12 +273,4 @@ config.server.enhanceMiddleware = (middleware) => {
   };
 };
 
-const MAPS_STUB = path.resolve(__dirname, 'utils/react-native-maps-stub.js');
-config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (platform === 'web' && moduleName.startsWith('react-native-maps')) {
-    return { type: 'sourceFile', filePath: MAPS_STUB };
-  }
-  return context.resolveRequest(context, moduleName, platform);
-};
-
 module.exports = config;
