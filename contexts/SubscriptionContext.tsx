@@ -113,7 +113,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
 
   // Initialize RevenueCat on mount
   useEffect(() => {
-    let customerInfoListener: { remove: () => void } | null = null;
+    let customerInfoListener: { remove: () => void } | void | null = null;
 
     const initRevenueCat = async () => {
       try {
