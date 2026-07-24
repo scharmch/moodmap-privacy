@@ -12,6 +12,7 @@ const TABS: TabBarItem[] = [
 ];
 
 export default function TabLayout() {
+
   const pathname = usePathname();
   const hideTabBar = pathname.startsWith('/checkin') || pathname.startsWith('/report') || pathname.startsWith('/insights/');
 

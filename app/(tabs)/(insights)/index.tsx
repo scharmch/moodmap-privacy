@@ -22,6 +22,7 @@ import {
   Users,
   RefreshCw,
   ChevronRight,
+  Lock,
 } from 'lucide-react-native';
 import { COLORS } from '@/constants/Colors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -38,6 +39,7 @@ import {
 import { fetchInsights, InsightsResponse, CopingStrategy, fetchCopingStrategies } from '@/utils/api';
 import { getMoodColor, getMoodEmoji } from '@/utils/streak';
 import { useWindowDimensions } from 'react-native';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const COPING_ICONS: Record<string, React.ReactNode> = {
   mindfulness: <Heart size={20} color={COLORS.accent} />,
@@ -92,6 +94,7 @@ export default function InsightsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { width } = useWindowDimensions();
+  const { isSubscribed } = useSubscription();
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [insights, setInsights] = useState<InsightsResponse | null>(null);
   const [copingStrategies, setCopingStrategies] = useState<CopingStrategy[]>([]);
@@ -280,357 +283,455 @@ export default function InsightsScreen() {
             <MoodDistributionBar data={distributionData} total={totalForDist} />
           </View>
 
-          {/* Loading state */}
-          {loading && (
-            <View style={{ gap: 16 }}>
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-            </View>
-          )}
-
-          {/* Error state */}
-          {error && !loading && (
+          {/* Premium gate: AI Insights Engine + Weekly Reports */}
+          {!isSubscribed ? (
             <View style={{
-              backgroundColor: 'rgba(224,92,92,0.08)',
-              borderRadius: 16,
-              padding: 16,
-              gap: 8,
+              borderRadius: 24,
+              overflow: 'hidden',
               borderWidth: 1,
-              borderColor: 'rgba(224,92,92,0.20)',
+              borderColor: 'rgba(74,144,217,0.18)',
             }}>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.danger, fontFamily: 'Nunito_700Bold' }}>
-                Couldn't load AI insights
-              </Text>
-              <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
-                {error}
-              </Text>
-              <AnimatedPressable onPress={onRefresh}>
-                <View style={{
-                  backgroundColor: COLORS.danger,
-                  borderRadius: 10,
-                  paddingVertical: 10,
-                  alignItems: 'center',
-                  marginTop: 4,
-                }}>
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Nunito_700Bold' }}>
-                    Try again
-                  </Text>
-                </View>
-              </AnimatedPressable>
-            </View>
-          )}
-
-          {/* AI Insights */}
-          {insights && !loading && (
-            <>
-              {/* Narrative */}
-              {insights.narrative && (
-                <View style={{
-                  backgroundColor: COLORS.primaryMuted,
-                  borderRadius: 20,
-                  padding: 16,
-                  gap: 8,
-                  borderWidth: 1,
-                  borderColor: 'rgba(74,144,217,0.15)',
-                }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Sparkles size={18} color={COLORS.primary} />
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.primary, fontFamily: 'Nunito_700Bold' }}>
-                      AI Summary
+              {/* Blurred preview rows */}
+              <View style={{ opacity: 0.18, gap: 12, padding: 16, paddingBottom: 0 }}>
+                {[
+                  { label: 'AI Summary', sub: 'Your mood has been trending upward this week...' },
+                  { label: 'Emotional patterns', sub: 'Morning routines are boosting your mood by +1.8' },
+                  { label: 'Stress patterns', sub: 'Work-related stress peaks on Tuesdays' },
+                ].map((row, i) => (
+                  <View key={i} style={{
+                    backgroundColor: COLORS.surface,
+                    borderRadius: 14,
+                    padding: 14,
+                    gap: 6,
+                    borderWidth: 1,
+                    borderColor: COLORS.border,
+                  }}>
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
+                      {row.label}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                      {row.sub}
                     </Text>
                   </View>
-                  <Text style={{ fontSize: 14, color: COLORS.text, fontFamily: 'Nunito_400Regular', lineHeight: 22 }}>
-                    {insights.narrative}
+                ))}
+              </View>
+
+              {/* Lock overlay */}
+              <View style={{
+                backgroundColor: 'rgba(240,246,255,0.92)',
+                padding: 28,
+                alignItems: 'center',
+                gap: 14,
+              }}>
+                <View style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  backgroundColor: COLORS.primaryMuted,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Lock size={26} color={COLORS.primary} />
+                </View>
+                <View style={{ alignItems: 'center', gap: 6 }}>
+                  <Text style={{ fontSize: 18, fontWeight: '800', color: COLORS.text, fontFamily: 'Nunito_800ExtraBold', textAlign: 'center' }}>
+                    AI Insights Engine
+                  </Text>
+                  <Text style={{ fontSize: 14, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', textAlign: 'center', lineHeight: 20 }}>
+                    Unlock personalized mood analysis, emotional patterns, triggers, and weekly reports with Premium.
                   </Text>
                 </View>
-              )}
-
-              {/* Patterns */}
-              {insights.patterns && insights.patterns.length > 0 && (
-                <View style={{ gap: 12 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
-                    Emotional patterns
-                  </Text>
-                  {insights.patterns.map((pattern, i) => {
-                    const impactColor = pattern.mood_impact >= 0 ? COLORS.accent : COLORS.danger;
-                    const impactSign = pattern.mood_impact >= 0 ? '+' : '';
-                    const impactVal = Number(pattern.mood_impact).toFixed(1);
-                    return (
-                      <View key={i} style={{
-                        backgroundColor: COLORS.surface,
-                        borderRadius: 16,
-                        padding: 16,
-                        gap: 8,
-                        borderWidth: 1,
-                        borderColor: COLORS.border,
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                      }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                          <View style={{ flex: 1, gap: 4 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                              <Text style={{ fontSize: 20 }}>{pattern.icon || '✨'}</Text>
-                              <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold', flex: 1 }} numberOfLines={2}>
-                                {pattern.title}
-                              </Text>
-                            </View>
-                            <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', lineHeight: 20 }}>
-                              {pattern.description}
-                            </Text>
-                          </View>
-                          <View style={{
-                            backgroundColor: `${impactColor}18`,
-                            paddingHorizontal: 8,
-                            paddingVertical: 4,
-                            borderRadius: 8,
-                            marginLeft: 8,
-                          }}>
-                            <Text style={{ fontSize: 13, fontWeight: '700', color: impactColor, fontFamily: 'Nunito_700Bold' }}>
-                              {impactSign}{impactVal}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* Safe spaces */}
-              {insights.safe_spaces && insights.safe_spaces.length > 0 && (
-                <View style={{ gap: 12 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
-                    Emotional safe spaces
-                  </Text>
-                  {insights.safe_spaces.map((space, i) => {
-                    const avgMoodDisplay = Number(space.avg_mood).toFixed(1);
-                    return (
-                      <View key={i} style={{
-                        backgroundColor: COLORS.surface,
-                        borderRadius: 16,
-                        padding: 14,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 12,
-                        borderWidth: 1,
-                        borderColor: COLORS.border,
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                      }}>
-                        <View style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 20,
-                          backgroundColor: COLORS.accentMuted,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                          <MapPin size={18} color={COLORS.accent} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }} numberOfLines={1}>
-                            {space.location}
-                          </Text>
-                          <Text style={{ fontSize: 12, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
-                            {space.visit_count} visits
-                          </Text>
-                        </View>
-                        <View style={{
-                          backgroundColor: COLORS.accentMuted,
-                          paddingHorizontal: 10,
-                          paddingVertical: 4,
-                          borderRadius: 10,
-                        }}>
-                          <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.accent, fontFamily: 'Nunito_700Bold' }}>
-                            {getMoodEmoji(Math.round(Number(space.avg_mood)))} {avgMoodDisplay}
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* Triggers */}
-              {insights.triggers && insights.triggers.length > 0 && (
-                <View style={{ gap: 12 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
-                    Emotional triggers
-                  </Text>
-                  {insights.triggers.map((trigger, i) => {
-                    const impact = Number(trigger.avg_mood_impact);
-                    const impactColor = impact >= 0 ? COLORS.accent : COLORS.danger;
-                    const impactSign = impact >= 0 ? '+' : '';
-                    return (
-                      <View key={i} style={{
-                        backgroundColor: COLORS.surface,
-                        borderRadius: 16,
-                        padding: 14,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 12,
-                        borderWidth: 1,
-                        borderColor: COLORS.border,
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                      }}>
-                        <View style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 20,
-                          backgroundColor: `${impactColor}18`,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                          <AlertTriangle size={18} color={impactColor} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }} numberOfLines={1}>
-                            {trigger.trigger}
-                          </Text>
-                          <Text style={{ fontSize: 12, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
-                            {trigger.frequency}x this period
-                          </Text>
-                        </View>
-                        <View style={{
-                          backgroundColor: `${impactColor}18`,
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 8,
-                        }}>
-                          <Text style={{ fontSize: 13, fontWeight: '700', color: impactColor, fontFamily: 'Nunito_700Bold' }}>
-                            {impactSign}{impact.toFixed(1)}
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* Stress patterns */}
-              {insights.stress_patterns && insights.stress_patterns.length > 0 && (
-                <View style={{ gap: 12 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
-                    Stress patterns
-                  </Text>
-                  {insights.stress_patterns.map((sp, i) => (
-                    <View key={i} style={{
-                      backgroundColor: 'rgba(224,92,92,0.06)',
-                      borderRadius: 16,
-                      padding: 14,
-                      gap: 6,
-                      borderWidth: 1,
-                      borderColor: 'rgba(224,92,92,0.12)',
-                    }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold', flex: 1 }} numberOfLines={1}>
-                          {sp.pattern}
-                        </Text>
-                        <View style={{
-                          backgroundColor: 'rgba(224,92,92,0.12)',
-                          paddingHorizontal: 8,
-                          paddingVertical: 3,
-                          borderRadius: 8,
-                        }}>
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: COLORS.danger, fontFamily: 'Nunito_600SemiBold' }}>
-                            {sp.frequency}x
-                          </Text>
-                        </View>
-                      </View>
-                      <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', lineHeight: 20 }}>
-                        {sp.description}
+                <View style={{ gap: 8, width: '100%' }}>
+                  {[
+                    { icon: '✦', label: 'AI-powered mood analysis' },
+                    { icon: '📊', label: 'Weekly emotional reports' },
+                    { icon: '🗺', label: 'Location mood heatmaps' },
+                  ].map((f, i) => (
+                    <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                      <Text style={{ fontSize: 16 }}>{f.icon}</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, fontFamily: 'Nunito_600SemiBold' }}>
+                        {f.label}
                       </Text>
                     </View>
                   ))}
                 </View>
+                <AnimatedPressable onPress={() => {
+                  console.log('[Insights] Go Premium pressed from AI Insights gate');
+                  router.push('/paywall');
+                }} style={{ width: '100%' }}>
+                  <View style={{
+                    backgroundColor: COLORS.primary,
+                    borderRadius: 14,
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 8,
+                    boxShadow: '0 4px 16px rgba(74,144,217,0.30)',
+                  }}>
+                    <Sparkles size={18} color="#FFFFFF" />
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Nunito_700Bold' }}>
+                      Unlock AI Insights
+                    </Text>
+                  </View>
+                </AnimatedPressable>
+              </View>
+            </View>
+          ) : (
+            <>
+              {/* Loading state */}
+              {loading && (
+                <View style={{ gap: 16 }}>
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </View>
               )}
+
+              {/* Error state */}
+              {error && !loading && (
+                <View style={{
+                  backgroundColor: 'rgba(224,92,92,0.08)',
+                  borderRadius: 16,
+                  padding: 16,
+                  gap: 8,
+                  borderWidth: 1,
+                  borderColor: 'rgba(224,92,92,0.20)',
+                }}>
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.danger, fontFamily: 'Nunito_700Bold' }}>
+                    Couldn't load AI insights
+                  </Text>
+                  <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                    {error}
+                  </Text>
+                  <AnimatedPressable onPress={onRefresh}>
+                    <View style={{
+                      backgroundColor: COLORS.danger,
+                      borderRadius: 10,
+                      paddingVertical: 10,
+                      alignItems: 'center',
+                      marginTop: 4,
+                    }}>
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Nunito_700Bold' }}>
+                        Try again
+                      </Text>
+                    </View>
+                  </AnimatedPressable>
+                </View>
+              )}
+
+              {/* AI Insights */}
+              {insights && !loading && (
+                <>
+                  {/* Narrative */}
+                  {insights.narrative && (
+                    <View style={{
+                      backgroundColor: COLORS.primaryMuted,
+                      borderRadius: 20,
+                      padding: 16,
+                      gap: 8,
+                      borderWidth: 1,
+                      borderColor: 'rgba(74,144,217,0.15)',
+                    }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Sparkles size={18} color={COLORS.primary} />
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.primary, fontFamily: 'Nunito_700Bold' }}>
+                          AI Summary
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 14, color: COLORS.text, fontFamily: 'Nunito_400Regular', lineHeight: 22 }}>
+                        {insights.narrative}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Patterns */}
+                  {insights.patterns && insights.patterns.length > 0 && (
+                    <View style={{ gap: 12 }}>
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
+                        Emotional patterns
+                      </Text>
+                      {insights.patterns.map((pattern, i) => {
+                        const impactColor = pattern.mood_impact >= 0 ? COLORS.accent : COLORS.danger;
+                        const impactSign = pattern.mood_impact >= 0 ? '+' : '';
+                        const impactVal = Number(pattern.mood_impact).toFixed(1);
+                        return (
+                          <View key={i} style={{
+                            backgroundColor: COLORS.surface,
+                            borderRadius: 16,
+                            padding: 16,
+                            gap: 8,
+                            borderWidth: 1,
+                            borderColor: COLORS.border,
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                          }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                              <View style={{ flex: 1, gap: 4 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                  <Text style={{ fontSize: 20 }}>{pattern.icon || '✨'}</Text>
+                                  <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold', flex: 1 }} numberOfLines={2}>
+                                    {pattern.title}
+                                  </Text>
+                                </View>
+                                <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', lineHeight: 20 }}>
+                                  {pattern.description}
+                                </Text>
+                              </View>
+                              <View style={{
+                                backgroundColor: `${impactColor}18`,
+                                paddingHorizontal: 8,
+                                paddingVertical: 4,
+                                borderRadius: 8,
+                                marginLeft: 8,
+                              }}>
+                                <Text style={{ fontSize: 13, fontWeight: '700', color: impactColor, fontFamily: 'Nunito_700Bold' }}>
+                                  {impactSign}{impactVal}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Safe spaces */}
+                  {insights.safe_spaces && insights.safe_spaces.length > 0 && (
+                    <View style={{ gap: 12 }}>
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
+                        Emotional safe spaces
+                      </Text>
+                      {insights.safe_spaces.map((space, i) => {
+                        const avgMoodDisplay = Number(space.avg_mood).toFixed(1);
+                        return (
+                          <View key={i} style={{
+                            backgroundColor: COLORS.surface,
+                            borderRadius: 16,
+                            padding: 14,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 12,
+                            borderWidth: 1,
+                            borderColor: COLORS.border,
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                          }}>
+                            <View style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              backgroundColor: COLORS.accentMuted,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              <MapPin size={18} color={COLORS.accent} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }} numberOfLines={1}>
+                                {space.location}
+                              </Text>
+                              <Text style={{ fontSize: 12, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                                {space.visit_count} visits
+                              </Text>
+                            </View>
+                            <View style={{
+                              backgroundColor: COLORS.accentMuted,
+                              paddingHorizontal: 10,
+                              paddingVertical: 4,
+                              borderRadius: 10,
+                            }}>
+                              <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.accent, fontFamily: 'Nunito_700Bold' }}>
+                                {getMoodEmoji(Math.round(Number(space.avg_mood)))} {avgMoodDisplay}
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Triggers */}
+                  {insights.triggers && insights.triggers.length > 0 && (
+                    <View style={{ gap: 12 }}>
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
+                        Emotional triggers
+                      </Text>
+                      {insights.triggers.map((trigger, i) => {
+                        const impact = Number(trigger.avg_mood_impact);
+                        const impactColor = impact >= 0 ? COLORS.accent : COLORS.danger;
+                        const impactSign = impact >= 0 ? '+' : '';
+                        return (
+                          <View key={i} style={{
+                            backgroundColor: COLORS.surface,
+                            borderRadius: 16,
+                            padding: 14,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 12,
+                            borderWidth: 1,
+                            borderColor: COLORS.border,
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                          }}>
+                            <View style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              backgroundColor: `${impactColor}18`,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              <AlertTriangle size={18} color={impactColor} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }} numberOfLines={1}>
+                                {trigger.trigger}
+                              </Text>
+                              <Text style={{ fontSize: 12, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                                {trigger.frequency}x this period
+                              </Text>
+                            </View>
+                            <View style={{
+                              backgroundColor: `${impactColor}18`,
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              borderRadius: 8,
+                            }}>
+                              <Text style={{ fontSize: 13, fontWeight: '700', color: impactColor, fontFamily: 'Nunito_700Bold' }}>
+                                {impactSign}{impact.toFixed(1)}
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Stress patterns */}
+                  {insights.stress_patterns && insights.stress_patterns.length > 0 && (
+                    <View style={{ gap: 12 }}>
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
+                        Stress patterns
+                      </Text>
+                      {insights.stress_patterns.map((sp, i) => (
+                        <View key={i} style={{
+                          backgroundColor: 'rgba(224,92,92,0.06)',
+                          borderRadius: 16,
+                          padding: 14,
+                          gap: 6,
+                          borderWidth: 1,
+                          borderColor: 'rgba(224,92,92,0.12)',
+                        }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold', flex: 1 }} numberOfLines={1}>
+                              {sp.pattern}
+                            </Text>
+                            <View style={{
+                              backgroundColor: 'rgba(224,92,92,0.12)',
+                              paddingHorizontal: 8,
+                              paddingVertical: 3,
+                              borderRadius: 8,
+                            }}>
+                              <Text style={{ fontSize: 12, fontWeight: '600', color: COLORS.danger, fontFamily: 'Nunito_600SemiBold' }}>
+                                {sp.frequency}x
+                              </Text>
+                            </View>
+                          </View>
+                          <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', lineHeight: 20 }}>
+                            {sp.description}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </>
+              )}
+
+              {/* Coping strategies */}
+              {copingStrategies.length > 0 && (
+                <View style={{ gap: 12 }}>
+                  <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
+                    Coping strategies
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 12, paddingRight: 20 }}
+                  >
+                    {copingStrategies.map((strategy, i) => {
+                      const durationDisplay = `${strategy.duration_minutes} min`;
+                      return (
+                        <View key={i} style={{
+                          backgroundColor: COLORS.surface,
+                          borderRadius: 16,
+                          padding: 16,
+                          width: 200,
+                          gap: 10,
+                          borderWidth: 1,
+                          borderColor: COLORS.border,
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                        }}>
+                          <View style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            backgroundColor: COLORS.accentMuted,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                            {COPING_ICONS[strategy.type] || <Heart size={20} color={COLORS.accent} />}
+                          </View>
+                          <View style={{ gap: 4 }}>
+                            <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }} numberOfLines={2}>
+                              {strategy.title}
+                            </Text>
+                            <Text style={{ fontSize: 12, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', lineHeight: 18 }} numberOfLines={3}>
+                              {strategy.description}
+                            </Text>
+                          </View>
+                          <View style={{
+                            backgroundColor: COLORS.primaryMuted,
+                            paddingHorizontal: 8,
+                            paddingVertical: 3,
+                            borderRadius: 8,
+                            alignSelf: 'flex-start',
+                          }}>
+                            <Text style={{ fontSize: 11, fontWeight: '600', color: COLORS.primary, fontFamily: 'Nunito_600SemiBold' }}>
+                              {durationDisplay}
+                            </Text>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Weekly report CTA — premium only */}
+              <AnimatedPressable onPress={() => {
+                console.log('[Insights] View weekly report pressed, week:', weekStart);
+                router.push(`/report/${weekStart}`);
+              }}>
+                <View style={{
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 16,
+                  padding: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 4px 16px rgba(74,144,217,0.30)',
+                }}>
+                  <View style={{ gap: 2 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Nunito_700Bold' }}>
+                      Weekly report
+                    </Text>
+                    <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: 'Nunito_400Regular' }}>
+                      View your full emotional summary
+                    </Text>
+                  </View>
+                  <ChevronRight size={20} color="rgba(255,255,255,0.8)" />
+                </View>
+              </AnimatedPressable>
             </>
           )}
-
-          {/* Coping strategies */}
-          {copingStrategies.length > 0 && (
-            <View style={{ gap: 12 }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }}>
-                Coping strategies
-              </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12, paddingRight: 20 }}
-              >
-                {copingStrategies.map((strategy, i) => {
-                  const durationDisplay = `${strategy.duration_minutes} min`;
-                  return (
-                    <View key={i} style={{
-                      backgroundColor: COLORS.surface,
-                      borderRadius: 16,
-                      padding: 16,
-                      width: 200,
-                      gap: 10,
-                      borderWidth: 1,
-                      borderColor: COLORS.border,
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                    }}>
-                      <View style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        backgroundColor: COLORS.accentMuted,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        {COPING_ICONS[strategy.type] || <Heart size={20} color={COLORS.accent} />}
-                      </View>
-                      <View style={{ gap: 4 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold' }} numberOfLines={2}>
-                          {strategy.title}
-                        </Text>
-                        <Text style={{ fontSize: 12, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', lineHeight: 18 }} numberOfLines={3}>
-                          {strategy.description}
-                        </Text>
-                      </View>
-                      <View style={{
-                        backgroundColor: COLORS.primaryMuted,
-                        paddingHorizontal: 8,
-                        paddingVertical: 3,
-                        borderRadius: 8,
-                        alignSelf: 'flex-start',
-                      }}>
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: COLORS.primary, fontFamily: 'Nunito_600SemiBold' }}>
-                          {durationDisplay}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* Weekly report CTA */}
-          <AnimatedPressable onPress={() => {
-            console.log('[Insights] View weekly report pressed, week:', weekStart);
-            router.push(`/report/${weekStart}`);
-          }}>
-            <View style={{
-              backgroundColor: COLORS.primary,
-              borderRadius: 16,
-              padding: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              boxShadow: '0 4px 16px rgba(74,144,217,0.30)',
-            }}>
-              <View style={{ gap: 2 }}>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Nunito_700Bold' }}>
-                  Weekly report
-                </Text>
-                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: 'Nunito_400Regular' }}>
-                  View your full emotional summary
-                </Text>
-              </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.8)" />
-            </View>
-          </AnimatedPressable>
 
         </Animated.View>
       </ScrollView>

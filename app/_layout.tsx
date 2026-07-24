@@ -1,6 +1,6 @@
 import "react-native-reanimated";
-import React, { useEffect } from "react";
-import { Stack } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Stack, Redirect, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { SystemBars } from "react-native-edge-to-edge";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -15,7 +15,9 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CheckInProvider } from "@/contexts/CheckInContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { initDatabase } from "@/utils/database";
+import { isOnboardingComplete } from "@/utils/onboardingStorage";
 import {
   useFonts,
   Nunito_400Regular,
@@ -35,6 +37,8 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const pathname = usePathname();
   const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
     Nunito_400Regular,
@@ -44,11 +48,21 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    isOnboardingComplete().then((complete) => {
+      setOnboardingComplete(complete);
+    });
+  }, [pathname]);
+
+  useEffect(() => {
     if (fontsLoaded) {
       initDatabase().catch(err => console.error('[DB] Init error:', err));
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  if (onboardingComplete === null || !fontsLoaded) {
+    return null;
+  }
 
   const CustomDefaultTheme: Theme = {
     ...DefaultTheme,
@@ -75,26 +89,30 @@ export default function RootLayout() {
     },
   };
 
-  if (!fontsLoaded) return null;
-
   return (
-    <DevErrorBoundary>
-      <StatusBar style="auto" animated />
-      <ThemeProvider value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}>
-        <SafeAreaProvider>
-          <CheckInProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="checkin" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-                <Stack.Screen name="report" options={{ headerShown: false }} />
-                <Stack.Screen name="insights" options={{ headerShown: false }} />
-              </Stack>
-              <SystemBars style="auto" />
-            </GestureHandlerRootView>
-          </CheckInProvider>
-        </SafeAreaProvider>
-      </ThemeProvider>
-    </DevErrorBoundary>
+    <SubscriptionProvider>
+      <DevErrorBoundary>
+        <StatusBar style="auto" animated />
+        <ThemeProvider value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}>
+          <SafeAreaProvider>
+            <CheckInProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                {onboardingComplete === false && pathname !== "/auth" && pathname !== "/paywall" && pathname !== "/auth-popup" && pathname !== "/auth-callback" && <Redirect href="/onboarding" />}
+
+                <Stack>
+                  <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                  <Stack.Screen name="paywall" options={{ headerShown: false }} />
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="checkin" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+                  <Stack.Screen name="report" options={{ headerShown: false }} />
+                  <Stack.Screen name="insights" options={{ headerShown: false }} />
+                </Stack>
+                <SystemBars style="auto" />
+              </GestureHandlerRootView>
+            </CheckInProvider>
+          </SafeAreaProvider>
+        </ThemeProvider>
+      </DevErrorBoundary>
+    </SubscriptionProvider>
   );
 }

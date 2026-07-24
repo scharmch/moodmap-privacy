@@ -21,6 +21,8 @@ import {
   Trash2,
   Download,
   FileText,
+  Sparkles,
+  Crown,
 } from 'lucide-react-native';
 import { COLORS } from '@/constants/Colors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -33,6 +35,7 @@ import {
   CheckIn,
 } from '@/utils/database';
 import { calculateStreak, getWeeklyAverage } from '@/utils/streak';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 interface SettingRowProps {
   icon: React.ReactNode;
@@ -123,6 +126,7 @@ function Divider() {
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isSubscribed } = useSubscription();
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [displayName, setDisplayName] = useState('');
   const [editingName, setEditingName] = useState(false);
@@ -363,6 +367,90 @@ export default function ProfileScreen() {
         </View>
 
         <View style={{ paddingHorizontal: 20, gap: 20 }}>
+
+          {/* Go Premium banner — shown only to free users */}
+          {!isSubscribed && (
+            <AnimatedPressable onPress={() => {
+              console.log('[Profile] Go Premium button pressed');
+              router.push('/paywall');
+            }}>
+              <View style={{
+                borderRadius: 20,
+                overflow: 'hidden',
+                backgroundColor: COLORS.primary,
+                padding: 18,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+                boxShadow: '0 4px 20px rgba(74,144,217,0.35)',
+              }}>
+                <View style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: 'rgba(255,255,255,0.20)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Crown size={24} color="#FFFFFF" />
+                </View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF', fontFamily: 'Nunito_800ExtraBold' }}>
+                      Go Premium
+                    </Text>
+                    <View style={{
+                      backgroundColor: 'rgba(255,255,255,0.25)',
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 8,
+                    }}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Nunito_700Bold', letterSpacing: 0.5 }}>
+                        PRO
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', fontFamily: 'Nunito_400Regular' }}>
+                    Unlock AI Insights & Weekly Reports
+                  </Text>
+                </View>
+                <ChevronRight size={20} color="rgba(255,255,255,0.8)" />
+              </View>
+            </AnimatedPressable>
+          )}
+
+          {/* Pro member badge — shown to subscribers */}
+          {isSubscribed && (
+            <View style={{
+              borderRadius: 20,
+              backgroundColor: 'rgba(126,200,164,0.12)',
+              padding: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              borderWidth: 1,
+              borderColor: 'rgba(126,200,164,0.25)',
+            }}>
+              <View style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: COLORS.accentMuted,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Sparkles size={20} color={COLORS.accent} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.accent, fontFamily: 'Nunito_700Bold' }}>
+                  Premium Member
+                </Text>
+                <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                  All features unlocked
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Notifications */}
           <SectionCard title="Notifications">
