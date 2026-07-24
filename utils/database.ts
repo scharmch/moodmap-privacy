@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 
 export interface CheckIn {
@@ -32,6 +33,9 @@ export interface InsightsCache {
 let db: SQLite.SQLiteDatabase | null = null;
 
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
+  if (Platform.OS === 'web') {
+    throw new Error('SQLite is not supported on web');
+  }
   if (!db) {
     db = await SQLite.openDatabaseAsync('emotional_gps.db');
   }
@@ -39,6 +43,10 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
 }
 
 export async function initDatabase(): Promise<void> {
+  if (Platform.OS === 'web') {
+    console.log('[DB] Skipping database init on web');
+    return;
+  }
   console.log('[DB] Initializing database...');
   const database = await getDatabase();
 
@@ -232,6 +240,7 @@ function rowToCheckIn(row: Record<string, unknown>): CheckIn {
 }
 
 export async function getAllCheckIns(): Promise<CheckIn[]> {
+  if (Platform.OS === 'web') return [];
   const database = await getDatabase();
   const rows = await database.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM check_ins ORDER BY created_at DESC'
@@ -240,6 +249,7 @@ export async function getAllCheckIns(): Promise<CheckIn[]> {
 }
 
 export async function getRecentCheckIns(limit: number = 5): Promise<CheckIn[]> {
+  if (Platform.OS === 'web') return [];
   const database = await getDatabase();
   const rows = await database.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM check_ins ORDER BY created_at DESC LIMIT ?',
@@ -249,6 +259,7 @@ export async function getRecentCheckIns(limit: number = 5): Promise<CheckIn[]> {
 }
 
 export async function getCheckInById(id: string): Promise<CheckIn | null> {
+  if (Platform.OS === 'web') return null;
   const database = await getDatabase();
   const row = await database.getFirstAsync<Record<string, unknown>>(
     'SELECT * FROM check_ins WHERE id = ?',
@@ -258,6 +269,7 @@ export async function getCheckInById(id: string): Promise<CheckIn | null> {
 }
 
 export async function getCheckInsForPeriod(days: number): Promise<CheckIn[]> {
+  if (Platform.OS === 'web') return [];
   const database = await getDatabase();
   const since = new Date();
   since.setDate(since.getDate() - days);
@@ -269,6 +281,7 @@ export async function getCheckInsForPeriod(days: number): Promise<CheckIn[]> {
 }
 
 export async function getTodayCheckIns(): Promise<CheckIn[]> {
+  if (Platform.OS === 'web') return [];
   const database = await getDatabase();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -280,6 +293,7 @@ export async function getTodayCheckIns(): Promise<CheckIn[]> {
 }
 
 export async function saveCheckIn(checkIn: CheckIn): Promise<void> {
+  if (Platform.OS === 'web') return;
   console.log('[DB] Saving check-in:', checkIn.id, 'mood:', checkIn.mood_score);
   const database = await getDatabase();
   await database.runAsync(
@@ -305,6 +319,7 @@ export async function saveCheckIn(checkIn: CheckIn): Promise<void> {
 }
 
 export async function updateCheckIn(id: string, updates: Partial<CheckIn>): Promise<void> {
+  if (Platform.OS === 'web') return;
   console.log('[DB] Updating check-in:', id);
   const database = await getDatabase();
   const existing = await getCheckInById(id);
@@ -314,6 +329,7 @@ export async function updateCheckIn(id: string, updates: Partial<CheckIn>): Prom
 }
 
 export async function deleteCheckIn(id: string): Promise<void> {
+  if (Platform.OS === 'web') return;
   console.log('[DB] Deleting check-in:', id);
   const database = await getDatabase();
   await database.runAsync('DELETE FROM check_ins WHERE id = ?', [id]);
@@ -322,6 +338,7 @@ export async function deleteCheckIn(id: string): Promise<void> {
 // ---- User Settings ----
 
 export async function getSetting(key: string, defaultValue?: string): Promise<string | null> {
+  if (Platform.OS === 'web') return defaultValue ?? null;
   const database = await getDatabase();
   const row = await database.getFirstAsync<{ value: string }>(
     'SELECT value FROM user_settings WHERE key = ?',
@@ -331,6 +348,7 @@ export async function getSetting(key: string, defaultValue?: string): Promise<st
 }
 
 export async function setSetting(key: string, value: string): Promise<void> {
+  if (Platform.OS === 'web') return;
   console.log('[DB] Setting:', key, '=', value);
   const database = await getDatabase();
   await database.runAsync(
@@ -342,6 +360,7 @@ export async function setSetting(key: string, value: string): Promise<void> {
 // ---- Insights Cache ----
 
 export async function getCachedInsights(type: string): Promise<InsightsCache | null> {
+  if (Platform.OS === 'web') return null;
   const database = await getDatabase();
   const row = await database.getFirstAsync<Record<string, unknown>>(
     'SELECT * FROM insights_cache WHERE type = ? ORDER BY generated_at DESC LIMIT 1',
@@ -357,6 +376,7 @@ export async function getCachedInsights(type: string): Promise<InsightsCache | n
 }
 
 export async function setCachedInsights(type: string, content: unknown): Promise<void> {
+  if (Platform.OS === 'web') return;
   console.log('[DB] Caching insights for type:', type);
   const database = await getDatabase();
   const id = `${type}_${Date.now()}`;
@@ -367,12 +387,14 @@ export async function setCachedInsights(type: string, content: unknown): Promise
 }
 
 export async function deleteAllCheckIns(): Promise<void> {
+  if (Platform.OS === 'web') return;
   console.log('[DB] Deleting all check-ins');
   const database = await getDatabase();
   await database.runAsync('DELETE FROM check_ins');
 }
 
 export async function clearInsightsCache(): Promise<void> {
+  if (Platform.OS === 'web') return;
   const database = await getDatabase();
   await database.runAsync('DELETE FROM insights_cache');
 }
