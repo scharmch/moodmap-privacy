@@ -1,6 +1,8 @@
 {
   "expo": {
     "privacyPolicyUrl": "https://moodmap.app/privacy",
+    "copyright": "© 2025 MoodMap AI. All rights reserved.",
+    "supportUrl": "https://moodmap.app/support",
     "name": "MoodMap AI",
     "slug": "moodmap-ai",
     "description": "Emotional GPS is your personal emotional intelligence companion. Track how places, routines, activities, and social interactions shape the way you feel — then let AI reveal the patterns.\n\nWith quick mood check-ins (1–10), activity and social context logging, optional location tagging, and voice or text notes, Emotional GPS builds a rich picture of your emotional landscape over time.\n\n🗺️ EMOTIONAL MAP\nVisualize your mood data on an interactive map with color-coded markers and heatmaps. Discover the places where you consistently feel calm, energized, or overwhelmed — with full privacy controls to blur or hide exact locations.\n\n🤖 AI INSIGHTS ENGINE\nPersonalized, non-diagnostic observations powered by AI. Uncover recurring emotional triggers, emotional safe spaces, stress patterns, and positive coping environments. Get evidence-informed suggestions for mindfulness exercises, grounding techniques, journaling prompts, and breathing practices tailored to your patterns.\n\n📊 MOOD DASHBOARD\nTrack mood trends over time, emotional streaks, resilience scores, and activity correlations. Receive personalized weekly reports that celebrate your progress and highlight growth opportunities.\n\n🔔 SMART REMINDERS\nSet check-in reminders based on your routines with full control over when and how you're notified.\n\n🔒 PRIVACY FIRST\nAll data is stored locally on your device and never sold. Location data can be blurred for privacy. GDPR and CCPA compliant. You can export or delete all your data at any time.\n\nDesigned for anyone who wants to build deeper self-awareness, understand how their environment affects their well-being, and make healthier, more intentional decisions every day.",
@@ -15,7 +17,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.moodmap.app",
+      "bundleIdentifier": "com.moodapp.myapp",
       "buildNumber": "1",
       "icon": "./assets/images/icon.png",
       "appleTeamId": "REPLACE_WITH_YOUR_TEAM_ID",
