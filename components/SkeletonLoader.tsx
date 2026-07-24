@@ -20,7 +20,7 @@ export function SkeletonLine({ width, height = 14, style }: SkeletonLineProps) {
     );
     anim.start();
     return () => anim.stop();
-  }, []);
+  }, [opacity]);
 
   return (
     <Animated.View

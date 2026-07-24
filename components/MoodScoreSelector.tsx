@@ -33,7 +33,7 @@ export function MoodScoreSelector({ value, onChange }: MoodScoreSelectorProps) {
       Animated.timing(emojiScale, { toValue: 1.2, duration: 100, useNativeDriver: true }),
       Animated.spring(emojiScale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 8 }),
     ]).start();
-  }, [value]);
+  }, [value, emojiScale]);
 
   const handlePress = (score: number) => {
     console.log('[MoodScoreSelector] Selected mood score:', score);

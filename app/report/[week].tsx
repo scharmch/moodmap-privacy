@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -24,12 +24,7 @@ export default function WeeklyReportScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log('[Weekly Report] Loading report for week:', week);
-    loadReport();
-  }, [week]);
-
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     try {
       const checkIns = await getCheckInsForPeriod(14);
       const weekStart = week || new Date().toISOString().split('T')[0];
@@ -42,7 +37,12 @@ export default function WeeklyReportScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [week]);
+
+  useEffect(() => {
+    console.log('[Weekly Report] Loading report for week:', week);
+    loadReport();
+  }, [week, loadReport]);
 
   const weekLabel = week
     ? new Date(week).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })

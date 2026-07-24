@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
@@ -19,13 +19,7 @@ export default function Step5() {
   const [gpsLabel, setGpsLabel] = useState<string | null>(null);
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  useEffect(() => {
-    if (mode === 'gps') {
-      requestLocation();
-    }
-  }, [mode]);
-
-  const requestLocation = async () => {
+  const requestLocation = useCallback(async () => {
     console.log('[CheckIn Step 5] Requesting GPS location...');
     setLocationLoading(true);
     setLocationError(null);
@@ -61,7 +55,13 @@ export default function Step5() {
     } finally {
       setLocationLoading(false);
     }
-  };
+  }, [updateDraft]);
+
+  useEffect(() => {
+    if (mode === 'gps') {
+      requestLocation();
+    }
+  }, [mode, requestLocation]);
 
   const handleNext = () => {
     if (mode === 'gps' && gpsCoords) {

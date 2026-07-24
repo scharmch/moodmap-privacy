@@ -66,6 +66,7 @@ function CheckInItem({ item, index, onPress }: CheckInItemProps) {
       Animated.timing(opacity, { toValue: 1, duration: 350, delay: index * 60, useNativeDriver: true }),
       Animated.timing(translateY, { toValue: 0, duration: 350, delay: index * 60, useNativeDriver: true }),
     ]).start();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const moodColor = getMoodColor(item.mood_score);
@@ -189,6 +190,7 @@ export default function HomeScreen() {
     );
     pulse.start();
     return () => pulse.stop();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = useCallback(async () => {

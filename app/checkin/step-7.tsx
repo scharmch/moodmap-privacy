@@ -34,6 +34,7 @@ function ConfettiParticle({ delay, color }: { delay: number; color: string }) {
       ]),
       Animated.timing(opacity, { toValue: 0, duration: 200, useNativeDriver: true }),
     ]).start();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const rotateInterp = rotate.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '720deg'] });
