@@ -17,10 +17,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.moodapp.myapp",
+      "bundleIdentifier": "com.moodmap.app",
       "buildNumber": "1",
       "icon": "./assets/images/icon.png",
-      "appleTeamId": "REPLACE_WITH_YOUR_TEAM_ID",
+      "appleTeamId": "6794167062",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Allow Emotional GPS to access your location to track where you feel your best.",
