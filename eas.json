@@ -25,6 +25,9 @@
       "credentialsSource": "remote",
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "autoIncrement": true
       }
     }
   },
@@ -33,6 +36,10 @@
       "android": {
         "serviceAccountKeyPath": "./google-services-key.json",
         "track": "internal"
+      },
+      "ios": {
+        "appleId": "",
+        "ascAppId": ""
       }
     }
   }
