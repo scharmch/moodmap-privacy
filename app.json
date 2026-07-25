@@ -1,6 +1,7 @@
 {
   "expo": {
     "privacyPolicyUrl": "https://doc-hosting.flycricket.io/moodmap-ai-privacy-policy/0ca2ea75-1600-41a1-8a4b-ab6f340b2ef8/privacy",
+    "termsOfServiceUrl": "https://doc-hosting.flycricket.io/moodmap-ai-terms-of-use/6e8570d9-4ca9-449c-b7a4-80f1d32c2278/terms",
     "copyright": "\u00a9 2025 MoodMap AI. All rights reserved.",
     "supportUrl": "https://scharmch.github.io/moodmap-privacy/support.html",
     "name": "MoodMap AI",
@@ -79,6 +80,7 @@
     "extra": {
       "router": {},
       "privacyPolicyUrl": "https://doc-hosting.flycricket.io/moodmap-ai-privacy-policy/0ca2ea75-1600-41a1-8a4b-ab6f340b2ef8/privacy",
+      "termsOfServiceUrl": "https://doc-hosting.flycricket.io/moodmap-ai-terms-of-use/6e8570d9-4ca9-449c-b7a4-80f1d32c2278/terms",
       "supportUrl": "https://scharmch.github.io/moodmap-privacy/support.html"
     }
   }
