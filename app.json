@@ -21,6 +21,7 @@
       "backgroundColor": "#4A90D9"
     },
     "ios": {
+      "deploymentTarget": "15.1",
       "supportsTablet": true,
       "jsEngine": "hermes",
       "bundleIdentifier": "com.moodmap.app",
