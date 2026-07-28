@@ -7,17 +7,13 @@ const config = getDefaultConfig(__dirname);
 
 config.resolver.unstable_enablePackageExports = true;
 
-// Redirect react-native-maps to a web stub
-const existingResolver = config.resolver.resolveRequest;
+// Redirect react-native-maps to a web-safe stub when bundling for web
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (platform === 'web' && moduleName === 'react-native-maps') {
+  if (moduleName === 'react-native-maps' && platform === 'web') {
     return {
-      filePath: path.resolve(__dirname, 'utils/react-native-maps-stub.js'),
       type: 'sourceFile',
+      filePath: path.resolve(__dirname, 'utils/react-native-maps-stub.js'),
     };
-  }
-  if (existingResolver) {
-    return existingResolver(context, moduleName, platform);
   }
   return context.resolveRequest(context, moduleName, platform);
 };
