@@ -7,17 +7,6 @@ const config = getDefaultConfig(__dirname);
 
 config.resolver.unstable_enablePackageExports = true;
 
-// Redirect react-native-maps to a web-safe stub when bundling for web
-config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === 'react-native-maps' && platform === 'web') {
-    return {
-      type: 'sourceFile',
-      filePath: path.resolve(__dirname, 'utils/react-native-maps-stub.js'),
-    };
-  }
-  return context.resolveRequest(context, moduleName, platform);
-};
-
 // Use turborepo to restore the cache when possible
 config.cacheStores = [
     new FileStore({ root: path.join(__dirname, 'node_modules', '.cache', 'metro') }),
@@ -282,6 +271,16 @@ config.server.enhanceMiddleware = (middleware) => {
     // Pass through to default Metro middleware
     return middleware(req, res, next);
   };
+};
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (platform === 'web' && (moduleName === 'react-native-maps' || moduleName.startsWith('react-native-maps/'))) {
+    return {
+      filePath: require('path').resolve(__dirname, 'utils/react-native-maps-stub.js'),
+      type: 'sourceFile',
+    };
+  }
+  return context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;
