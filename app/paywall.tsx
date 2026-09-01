@@ -58,6 +58,11 @@ const colors = {
   warning: "#FF9500",
 };
 
+const PRIVACY_POLICY_URL =
+  "https://doc-hosting.flycricket.io/moodmap-ai-privacy-policy/0ca2ea75-1600-41a1-8a4b-ab6f340b2ef8/privacy";
+const TERMS_OF_SERVICE_URL =
+  "https://doc-hosting.flycricket.io/moodmap-ai-terms-of-use/6e8570d9-4ca9-449c-b7a4-80f1d32c2278/terms";
+
 export default function PaywallScreen() {
   const router = useRouter();
 
@@ -424,6 +429,15 @@ export default function PaywallScreen() {
                 <Text style={styles.legalText}>
                   Preview mode — purchases available in the mobile app
                 </Text>
+                <View style={styles.legalLinks}>
+                  <TouchableOpacity onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}>
+                    <Text style={styles.legalLink}>Terms of Service</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.legalLinkSeparator}> · </Text>
+                  <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
+                    <Text style={styles.legalLink}>Privacy Policy</Text>
+                  </TouchableOpacity>
+                </View>
               </>
             ) : (
               <>
@@ -466,9 +480,18 @@ export default function PaywallScreen() {
                 <Text style={styles.legalText}>
                   Payment will be charged to your{" "}
                   {Platform.OS === "ios" ? "Apple ID" : "Google Play"} account.
-                  Subscription automatically renews unless canceled at least 24 hours
-                  before the end of the current period.
+                  Subscription automatically renews unless canceled at least 24
+                  hours before the end of the current period.
                 </Text>
+                <View style={styles.legalLinks}>
+                  <TouchableOpacity onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}>
+                    <Text style={styles.legalLink}>Terms of Service</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.legalLinkSeparator}> · </Text>
+                  <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
+                    <Text style={styles.legalLink}>Privacy Policy</Text>
+                  </TouchableOpacity>
+                </View>
               </>
             )}
           </View>
@@ -777,6 +800,20 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.6)",
     textAlign: "center",
     lineHeight: 16,
+  },
+  legalLinks: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  legalLink: {
+    fontSize: 11,
+    color: "rgba(255, 255, 255, 0.85)",
+    textDecorationLine: "underline",
+  },
+  legalLinkSeparator: {
+    fontSize: 11,
+    color: "rgba(255, 255, 255, 0.5)",
   },
 
   // Web mock purchase dialog (View-based, since Alert.alert with multiple buttons fails on web)
