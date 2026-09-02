@@ -6,7 +6,6 @@ const fs = require('fs');
 const config = getDefaultConfig(__dirname);
 
 config.resolver.unstable_enablePackageExports = true;
-config.resolver.platforms = ['ios', 'android', 'web'];
 
 // Use turborepo to restore the cache when possible
 config.cacheStores = [
@@ -277,7 +276,7 @@ config.server.enhanceMiddleware = (middleware) => {
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (platform === 'web' && moduleName === 'react-native-maps') {
     return {
-      filePath: require('path').resolve(__dirname, 'utils/react-native-maps-stub.js'),
+      filePath: path.resolve(__dirname, 'utils/react-native-maps-stub.js'),
       type: 'sourceFile',
     };
   }
