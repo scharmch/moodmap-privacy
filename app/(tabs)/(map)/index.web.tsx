@@ -1,12 +1,19 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, Pressable, Switch } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import {
+  View,
+  Text,
+  Animated,
+  Pressable,
+  Switch,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { MapPin, Eye, EyeOff } from 'lucide-react-native';
+import { MapPin, Layers, Eye, EyeOff, X, Clock, Activity } from 'lucide-react-native';
 import { COLORS } from '@/constants/Colors';
-import { Map, MapMarker } from '@/components/Map.web';
-import { getAllCheckIns, getSetting, CheckIn } from '@/utils/database.web';
+import { AnimatedPressable } from '@/components/AnimatedPressable';
+import { getAllCheckIns, getSetting, CheckIn } from '@/utils/database';
 import { getMoodColor, getMoodEmoji, getMoodLabel, formatRelativeTime } from '@/utils/streak';
+import { Map, MapMarker } from '@/components/Map.web';
 
 function blurCoordinate(lat: number, lng: number, id: string): { lat: number; lng: number } {
   let hash = 0;
@@ -19,40 +26,61 @@ function blurCoordinate(lat: number, lng: number, id: string): { lat: number; ln
   return { lat: lat + latOffset, lng: lng + lngOffset };
 }
 
-export default function MapScreenWeb() {
+interface MarkerData {
+  id: string;
+  lat: number;
+  lng: number;
+  mood_score: number;
+  mood_label: string;
+  location_label: string | null;
+  created_at: string;
+  activities: string[];
+  notes: string | null;
+}
+
+export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [markers, setMarkers] = useState<MapMarker[]>([]);
+  const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
+  const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [privacyBlur, setPrivacyBlur] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
+  const [viewMode, setViewMode] = useState<'markers' | 'heatmap'>('markers');
+  const bottomSheetAnim = useRef(new Animated.Value(0)).current;
 
   const loadData = useCallback(async () => {
-    console.log('[Map Web] Loading check-in data...');
+    console.log('[Map] Loading check-in data...');
     try {
       const [all, blurSetting] = await Promise.all([
         getAllCheckIns(),
         getSetting('privacy_blur', 'false'),
       ]);
+      setCheckIns(all);
       setPrivacyBlur(blurSetting === 'true');
 
-      const withLocation = all.filter((c: CheckIn) => c.latitude !== null && c.longitude !== null);
-      console.log('[Map Web] Found', withLocation.length, 'check-ins with location');
+      const withLocation = all.filter(c => c.latitude !== null && c.longitude !== null);
+      console.log('[Map] Found', withLocation.length, 'check-ins with location');
 
       const blur = blurSetting === 'true';
-      const markerData: MapMarker[] = withLocation.map((c: CheckIn) => {
+      const markerData: MarkerData[] = withLocation.map(c => {
         const lat = c.latitude!;
         const lng = c.longitude!;
         const coords = blur ? blurCoordinate(lat, lng, c.id) : { lat, lng };
         return {
           id: c.id,
-          latitude: coords.lat,
-          longitude: coords.lng,
-          title: `${getMoodEmoji(c.mood_score)} ${getMoodLabel(c.mood_score)}`,
-          description: formatRelativeTime(c.created_at),
+          lat: coords.lat,
+          lng: coords.lng,
+          mood_score: c.mood_score,
+          mood_label: c.mood_label,
+          location_label: c.location_label,
+          created_at: c.created_at,
+          activities: c.activities,
+          notes: c.notes,
         };
       });
       setMarkers(markerData);
     } catch (err) {
-      console.error('[Map Web] Error loading data:', err);
+      console.error('[Map] Error loading data:', err);
     }
   }, []);
 
@@ -60,45 +88,150 @@ export default function MapScreenWeb() {
     loadData();
   }, [loadData]));
 
+  const handleMarkerPress = (marker: MarkerData) => {
+    console.log('[Map] Marker pressed:', marker.id, 'mood:', marker.mood_score);
+    setSelectedMarker(marker);
+    Animated.spring(bottomSheetAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 6,
+    }).start();
+  };
+
+  const handleCloseSheet = () => {
+    console.log('[Map] Closing bottom sheet');
+    Animated.timing(bottomSheetAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setSelectedMarker(null));
+  };
+
   const handlePrivacyToggle = (val: boolean) => {
-    console.log('[Map Web] Privacy blur toggled:', val);
+    console.log('[Map] Privacy blur toggled:', val);
     setPrivacyBlur(val);
     loadData();
   };
 
-  const hasMarkers = markers.length > 0;
+  const handleViewModeToggle = (mode: 'markers' | 'heatmap') => {
+    console.log('[Map] View mode changed to:', mode);
+    setViewMode(mode);
+  };
 
-  const initialRegion = hasMarkers
-    ? {
-        latitude: markers[0].latitude,
-        longitude: markers[0].longitude,
-        latitudeDelta: 0.12,
-        longitudeDelta: 0.12,
-      }
-    : {
-        latitude: 37.7749,
-        longitude: -122.4194,
-        latitudeDelta: 0.12,
-        longitudeDelta: 0.12,
-      };
+  const handleViewDetail = (id: string) => {
+    console.log('[Map] Opening check-in detail from map:', id);
+    router.push(`/checkin/${id}`);
+  };
+
+  const bottomSheetTranslateY = bottomSheetAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [300, 0],
+  });
+
+  const initialRegion = {
+    latitude: 37.7749,
+    longitude: -122.4194,
+    latitudeDelta: 0.12,
+    longitudeDelta: 0.12,
+  };
+
+  // Build MapMarker[] for the Map component — used for both modes on web
+  const mapMarkers: MapMarker[] = markers.map(m => {
+    const emoji = getMoodEmoji(m.mood_score);
+    const label = m.mood_label;
+    const time = formatRelativeTime(m.created_at);
+    return {
+      id: m.id,
+      latitude: m.lat,
+      longitude: m.lng,
+      title: `${emoji} ${label}`,
+      description: time,
+    };
+  });
+
+  const markersButtonBg = viewMode === 'markers' ? COLORS.primary : 'transparent';
+  const heatmapButtonBg = viewMode === 'heatmap' ? COLORS.primary : 'transparent';
+  const markersTextColor = viewMode === 'markers' ? '#FFFFFF' : COLORS.textSecondary;
+  const heatmapTextColor = viewMode === 'heatmap' ? '#FFFFFF' : COLORS.textSecondary;
+  const eyeIcon = privacyBlur
+    ? <EyeOff size={16} color={COLORS.textSecondary} />
+    : <Eye size={16} color={COLORS.textSecondary} />;
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+      {/* Map */}
       <Map
-        style={{ flex: 1 }}
-        markers={markers}
+        markers={mapMarkers}
         initialRegion={initialRegion}
+        style={{ flex: 1, borderRadius: 0 }}
         showsUserLocation
       />
 
-      {/* Privacy toggle */}
+      {/* Top controls */}
       <View style={{
         position: 'absolute',
         top: insets.top + 12,
         left: 16,
         right: 16,
-        alignItems: 'center',
+        gap: 10,
       }}>
+        {/* View mode toggle */}
+        <View style={{
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          borderRadius: 14,
+          padding: 4,
+          flexDirection: 'row',
+          alignSelf: 'center',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+        }}>
+          <Pressable
+            onPress={() => handleViewModeToggle('markers')}
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 10,
+              backgroundColor: markersButtonBg,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <MapPin size={14} color={markersTextColor} />
+            <Text style={{
+              fontSize: 13,
+              fontWeight: '600',
+              color: markersTextColor,
+              fontFamily: 'Nunito_600SemiBold',
+            }}>
+              Markers
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => handleViewModeToggle('heatmap')}
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 10,
+              backgroundColor: heatmapButtonBg,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <Layers size={14} color={heatmapTextColor} />
+            <Text style={{
+              fontSize: 13,
+              fontWeight: '600',
+              color: heatmapTextColor,
+              fontFamily: 'Nunito_600SemiBold',
+            }}>
+              Heatmap
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Privacy toggle */}
         <View style={{
           backgroundColor: 'rgba(255,255,255,0.95)',
           borderRadius: 14,
@@ -107,15 +240,12 @@ export default function MapScreenWeb() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
+          alignSelf: 'center',
           minWidth: 220,
           boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-        } as any}>
+        }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {privacyBlur ? (
-              <EyeOff size={16} color={COLORS.textSecondary} />
-            ) : (
-              <Eye size={16} color={COLORS.textSecondary} />
-            )}
+            {eyeIcon}
             <Text style={{ fontSize: 13, color: COLORS.text, fontFamily: 'Nunito_600SemiBold' }}>
               Blur locations
             </Text>
@@ -130,7 +260,7 @@ export default function MapScreenWeb() {
       </View>
 
       {/* Empty state */}
-      {!hasMarkers && (
+      {markers.length === 0 && (
         <View style={{
           position: 'absolute',
           bottom: insets.bottom + 100,
@@ -142,7 +272,7 @@ export default function MapScreenWeb() {
           alignItems: 'center',
           gap: 8,
           boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-        } as any}>
+        }}>
           <MapPin size={24} color={COLORS.textTertiary} />
           <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.text, fontFamily: 'Nunito_700Bold', textAlign: 'center' }}>
             No location data yet
@@ -151,6 +281,128 @@ export default function MapScreenWeb() {
             Complete check-ins with location to see your emotional map
           </Text>
         </View>
+      )}
+
+      {/* Bottom sheet */}
+      {selectedMarker && (
+        <Animated.View style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          transform: [{ translateY: bottomSheetTranslateY }],
+        }}>
+          <View style={{
+            backgroundColor: COLORS.surface,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            padding: 20,
+            paddingBottom: insets.bottom + 20,
+            boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
+          }}>
+            {/* Handle */}
+            <View style={{
+              width: 36,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: COLORS.border,
+              alignSelf: 'center',
+              marginBottom: 16,
+            }} />
+
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ gap: 6, flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: `${getMoodColor(selectedMarker.mood_score)}18`,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Text style={{ fontSize: 22 }}>{getMoodEmoji(selectedMarker.mood_score)}</Text>
+                  </View>
+                  <View>
+                    <Text style={{
+                      fontSize: 18,
+                      fontWeight: '700',
+                      color: getMoodColor(selectedMarker.mood_score),
+                      fontFamily: 'Nunito_700Bold',
+                    }}>
+                      {selectedMarker.mood_label}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                      Score: {selectedMarker.mood_score}/10
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Clock size={13} color={COLORS.textTertiary} />
+                  <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                    {formatRelativeTime(selectedMarker.created_at)}
+                  </Text>
+                </View>
+
+                {selectedMarker.location_label && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <MapPin size={13} color={COLORS.textTertiary} />
+                    <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                      {selectedMarker.location_label}
+                    </Text>
+                  </View>
+                )}
+
+                {selectedMarker.activities.length > 0 && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Activity size={13} color={COLORS.textTertiary} />
+                    <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                      {selectedMarker.activities.join(', ')}
+                    </Text>
+                  </View>
+                )}
+
+                {selectedMarker.notes && (
+                  <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: 'Nunito_400Regular', fontStyle: 'italic' }} numberOfLines={2}>
+                    "{selectedMarker.notes}"
+                  </Text>
+                )}
+              </View>
+
+              <Pressable
+                onPress={handleCloseSheet}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: COLORS.surfaceSecondary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                accessibilityLabel="Close"
+              >
+                <X size={16} color={COLORS.textSecondary} />
+              </Pressable>
+            </View>
+
+            <AnimatedPressable
+              onPress={() => handleViewDetail(selectedMarker.id)}
+              style={{ marginTop: 16 }}
+            >
+              <View style={{
+                backgroundColor: COLORS.primary,
+                borderRadius: 12,
+                paddingVertical: 12,
+                alignItems: 'center',
+              }}>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Nunito_700Bold' }}>
+                  View full details
+                </Text>
+              </View>
+            </AnimatedPressable>
+          </View>
+        </Animated.View>
       )}
     </View>
   );
