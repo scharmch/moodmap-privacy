@@ -24,7 +24,7 @@
       "deploymentTarget": "15.1",
       "supportsTablet": true,
       "jsEngine": "hermes",
-      "bundleIdentifier": "com.moodmap.app",
+      "bundleIdentifier": "com.moodmapai.app",
       "buildNumber": "1",
       "icon": "./assets/images/icon.png",
       "infoPlist": {
@@ -41,7 +41,7 @@
         "foregroundImage": "./assets/images/app-icon-fic.png",
         "backgroundColor": "#4A90D9"
       },
-      "package": "com.moodmap.app",
+      "package": "com.moodmapai.app",
       "versionCode": 1,
       "permissions": [
         "ACCESS_FINE_LOCATION",
