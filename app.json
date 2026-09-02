@@ -58,7 +58,11 @@
       "favicon": "./assets/images/icon.png",
       "bundler": "metro"
     },
+    "updates": {
+      "url": "https://u.expo.dev/b222cb31-d3e1-4aca-b550-0535fc968054"
+    },
     "plugins": [
+      "expo-updates",
       "expo-font",
       "expo-router",
       "expo-web-browser",
