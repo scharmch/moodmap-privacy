@@ -9,12 +9,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import MapView, { Marker, Circle } from 'react-native-maps';
 import { MapPin, Layers, Eye, EyeOff, X, Clock, Activity } from 'lucide-react-native';
 import { COLORS } from '@/constants/Colors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { getAllCheckIns, getSetting, CheckIn } from '@/utils/database';
 import { getMoodColor, getMoodEmoji, getMoodLabel, formatRelativeTime } from '@/utils/streak';
+import { Map, MapMarker } from '@/components/Map';
 
 function blurCoordinate(lat: number, lng: number, id: string): { lat: number; lng: number } {
   // Deterministic pseudo-random offset based on id
@@ -90,17 +90,6 @@ export default function MapScreen() {
     loadData();
   }, [loadData]));
 
-  const handleMarkerPress = (marker: MarkerData) => {
-    console.log('[Map] Marker pressed:', marker.id, 'mood:', marker.mood_score);
-    setSelectedMarker(marker);
-    Animated.spring(bottomSheetAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 6,
-    }).start();
-  };
-
   const handleCloseSheet = () => {
     console.log('[Map] Closing bottom sheet');
     Animated.timing(bottomSheetAnim, {
@@ -138,55 +127,28 @@ export default function MapScreen() {
     longitudeDelta: 0.12,
   };
 
+  const mapMarkers: MapMarker[] = markers.map(marker => {
+    const emoji = getMoodEmoji(marker.mood_score);
+    const label = marker.mood_label;
+    const time = formatRelativeTime(marker.created_at);
+    return {
+      id: marker.id,
+      latitude: marker.lat,
+      longitude: marker.lng,
+      title: emoji + ' ' + label,
+      description: time,
+    };
+  });
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.background }}>
       {/* Map */}
-      <MapView
-        style={{ flex: 1 }}
+      <Map
+        markers={mapMarkers}
         initialRegion={initialRegion}
+        style={{ flex: 1, borderRadius: 0 }}
         showsUserLocation
-        showsMyLocationButton={false}
-        mapType="standard"
-      >
-        {viewMode === 'markers' && markers.map(marker => {
-          const color = getMoodColor(marker.mood_score);
-          return (
-            <Marker
-              key={marker.id}
-              coordinate={{ latitude: marker.lat, longitude: marker.lng }}
-              onPress={() => handleMarkerPress(marker)}
-            >
-              <View style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: color,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 2.5,
-                borderColor: '#FFFFFF',
-                boxShadow: `0 2px 8px ${color}66`,
-              }}>
-                <Text style={{ fontSize: 16 }}>{getMoodEmoji(marker.mood_score)}</Text>
-              </View>
-            </Marker>
-          );
-        })}
-
-        {viewMode === 'heatmap' && markers.map(marker => {
-          const color = getMoodColor(marker.mood_score);
-          return (
-            <Circle
-              key={marker.id}
-              center={{ latitude: marker.lat, longitude: marker.lng }}
-              radius={300}
-              fillColor={`${color}33`}
-              strokeColor={`${color}66`}
-              strokeWidth={1}
-            />
-          );
-        })}
-      </MapView>
+      />
 
       {/* Top controls */}
       <View style={{
