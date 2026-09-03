@@ -31,7 +31,8 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Allow Emotional GPS to access your location to track where you feel your best.",
         "NSMicrophoneUsageDescription": "MoodMap AI uses the microphone to record voice notes for your emotional check-ins.",
-        "NSSpeechRecognitionUsageDescription": "MoodMap AI uses speech recognition to transcribe your voice notes."
+        "NSSpeechRecognitionUsageDescription": "MoodMap AI uses speech recognition to transcribe your voice notes.",
+        "NSUserNotificationsUsageDescription": "MoodMap AI sends you reminders to log your mood and stay on top of your emotional wellness streaks."
       }
     },
     "android": {
@@ -46,7 +47,8 @@
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "RECORD_AUDIO"
+        "RECORD_AUDIO",
+        "POST_NOTIFICATIONS"
       ],
       "blockedPermissions": [
         "android.permission.READ_CONTACTS",
