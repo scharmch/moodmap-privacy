@@ -95,8 +95,8 @@
       "privacyPolicyUrl": "https://doc-hosting.flycricket.io/moodmap-ai-privacy-policy/0ca2ea75-1600-41a1-8a4b-ab6f340b2ef8/privacy",
       "termsOfServiceUrl": "https://doc-hosting.flycricket.io/moodmap-ai-terms-of-use/6e8570d9-4ca9-449c-b7a4-80f1d32c2278/terms",
       "supportUrl": "https://scharmch.github.io/moodmap-privacy/support.html",
-      "revenueCatApiKeyIos": "appl_REPLACE_WITH_YOUR_IOS_KEY",
-      "revenueCatApiKeyAndroid": "goog_REPLACE_WITH_YOUR_ANDROID_KEY"
+      "revenueCatApiKeyIos": "test_hssJzXMMBlJBjNKvcKKcBwVlsRu",
+      "revenueCatApiKeyAndroid": "test_hssJzXMMBlJBjNKvcKKcBwVlsRu"
     }
   }
 }
